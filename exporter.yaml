@@ -1,0 +1,52 @@
+kind: ConfigMap
+metadata:
+  labels:
+    app: vmware-exporter
+  name: vmware-exporter-config
+apiVersion: v1
+data:
+  VSPHERE_COLLECT_DATASTORES: 'True'
+  VSPHERE_COLLECT_HOSTS: 'True'
+  VSPHERE_COLLECT_VMS: 'True'
+  VSPHERE_HOST: vcenter.kublr-dev.com
+  VSPHERE_IGNORE_SSL: 'True'
+  VSPHERE_USER: exporter@KUBLR.LOCAL
+  
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vmware-exporter
+spec:
+  selector:
+    matchLabels:
+      app: vmware-exporter
+  template:
+    metadata:
+      labels:
+        app: vmware-exporter
+        release: vmware-exporter
+      annotations:
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9272"
+        prometheus.io/scrape: "vmware-exporter"
+    spec:
+      containers:
+      - name: vmware-exporter
+        image: "pryorda/vmware_exporter:latest"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9272
+          name: http
+		resources:
+          limits:
+            cpu: '1'
+            memory: 2Gi
+          requests:
+            cpu: 250m
+            memory: 64Mi
+        envFrom:
+        - configMapRef:
+            name: vmware-exporter-config
+        - secretRef:
+            name: vmware-exporter-password
