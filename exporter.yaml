@@ -38,7 +38,7 @@ spec:
         ports:
         - containerPort: 9272
           name: http
-		resources:
+	resources:
           limits:
             cpu: '1'
             memory: 2Gi
